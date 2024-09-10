@@ -118,7 +118,7 @@ new_string :: (str: string) -> String #no_context {
 // --------
 // Utils
 
-print_to_godot :: (str: string) {
+print_to_godot :: (str: string) #c_call {
     s : String;
     string_new_with_utf8_chars(*s, str.data);
     defer destroy(*s);

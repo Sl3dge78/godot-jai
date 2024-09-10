@@ -19,7 +19,7 @@ char32_t :: u32;
 char16_t :: u16;
 
 /* VARIANT TYPES */
-VariantType :: enum u32 {
+VariantType :: enum s32 {
     NIL                  :: 0;
     BOOL                 :: 1;
     INT                  :: 2;
@@ -103,7 +103,7 @@ VariantType :: enum u32 {
     GDEXTENSION_VARIANT_TYPE_VARIANT_MAX          :: VARIANT_MAX;
 }
 
-VariantOperator :: enum u32 {
+VariantOperator :: enum s32 {
     EQUAL         :: 0;
     NOT_EQUAL     :: 1;
     LESS          :: 2;
@@ -197,7 +197,7 @@ RefPtr :: *void;
 ConstRefPtr :: *void;
 
 /* VARIANT DATA I/O */
-CallErrorType :: enum u32 {
+CallErrorType :: enum s32 {
     OK                       :: 0;
     ERROR_INVALID_METHOD     :: 1;
     ERROR_INVALID_ARGUMENT   :: 2;
@@ -384,7 +384,7 @@ ClassCreationInfo3 :: struct {
 ClassLibraryPtr :: *void;
 
 /* Method */
-ClassMethodFlags :: enum u32 {
+ClassMethodFlags :: enum s32 {
     FLAG_NORMAL   :: 1;
     FLAG_EDITOR   :: 2;
     FLAG_CONST    :: 4;
@@ -402,7 +402,7 @@ ClassMethodFlags :: enum u32 {
     GDEXTENSION_METHOD_FLAGS_DEFAULT :: FLAGS_DEFAULT;
 }
 
-ClassMethodArgumentMetadata :: enum u32 {
+ClassMethodArgumentMetadata :: enum s32 {
     NONE           :: 0;
     INT_IS_INT8    :: 1;
     INT_IS_INT16   :: 2;
@@ -666,7 +666,7 @@ ScriptInstanceInfo3 :: struct {
 }
 
 /* INITIALIZATION */
-InitializationLevel :: enum u32 {
+InitializationLevel :: enum s32 {
     INITIALIZATION_CORE      :: 0;
     INITIALIZATION_SERVERS   :: 1;
     INITIALIZATION_SCENE     :: 2;
@@ -1506,7 +1506,7 @@ InterfaceStringNewWithUtf32Chars :: #type (r_dest: UninitializedStringPtr, p_con
 * @param r_dest A pointer to a Variant to hold the newly created String.
 * @param p_contents A pointer to a wide C string (null terminated).
 */
-InterfaceStringNewWithWideChars :: #type (r_dest: UninitializedStringPtr, p_contents: *s32) -> void #c_call;
+InterfaceStringNewWithWideChars :: #type (r_dest: UninitializedStringPtr, p_contents: *u16) -> void #c_call;
 
 /**
 * @name string_new_with_latin1_chars_and_len
@@ -1597,7 +1597,7 @@ InterfaceStringNewWithUtf32CharsAndLen :: #type (r_dest: UninitializedStringPtr,
 * @param p_contents A pointer to a wide C string.
 * @param p_size The number of characters (not bytes).
 */
-InterfaceStringNewWithWideCharsAndLen :: #type (r_dest: UninitializedStringPtr, p_contents: *s32, p_char_count: Int) -> void #c_call;
+InterfaceStringNewWithWideCharsAndLen :: #type (r_dest: UninitializedStringPtr, p_contents: *u16, p_char_count: Int) -> void #c_call;
 
 /**
 * @name string_to_latin1_chars
@@ -1677,7 +1677,7 @@ InterfaceStringToUtf32Chars :: #type (p_self: ConstStringPtr, r_text: *char32_t,
 *
 * @return The resulting encoded string length in characters (not bytes), not including a null terminator.
 */
-InterfaceStringToWideChars :: #type (p_self: ConstStringPtr, r_text: *s32, p_max_write_length: Int) -> Int #c_call;
+InterfaceStringToWideChars :: #type (p_self: ConstStringPtr, r_text: *u16, p_max_write_length: Int) -> Int #c_call;
 
 /**
 * @name string_operator_index
@@ -1747,7 +1747,7 @@ InterfaceStringOperatorPlusEqCstr :: #type (p_self: StringPtr, p_b: *u8) -> void
 * @param p_self A pointer to the String.
 * @param p_b A pointer to a wide C string (null terminated).
 */
-InterfaceStringOperatorPlusEqWcstr :: #type (p_self: StringPtr, p_b: *s32) -> void #c_call;
+InterfaceStringOperatorPlusEqWcstr :: #type (p_self: StringPtr, p_b: *u16) -> void #c_call;
 
 /**
 * @name string_operator_plus_eq_c32str

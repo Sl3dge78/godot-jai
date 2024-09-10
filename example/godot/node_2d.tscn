@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://b8b8fb8mxa3nc"]
+
+[node name="Node2D" type="Node2D"]
+
+[node name="JaiClass" type="JaiClass" parent="."]

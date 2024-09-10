@@ -4,7 +4,7 @@
         {
             "label": "jai build.jai",
             "type": "shell",
-            "command": "jai build.jai",
+            "command": "jai example/build.jai",
             "presentation": {
                 "echo": true,
                 "reveal": "never",
@@ -78,7 +78,7 @@
         {
             "label": "generate bindings",
             "type": "shell",
-            "command": "jai generation/generate_all.jai",
+            "command": "jai module/generation/generate_all.jai",
             "problemMatcher": []
         }
     ]

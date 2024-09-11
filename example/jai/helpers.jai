@@ -48,17 +48,13 @@ __END
 
 GET_VIRTUAL_FUNC :: #string __END
 _get_virtual :: (p_class_userdata: *void, p_name: ConstStringNamePtr) -> ClassCallVirtual #c_call {
-    print_to_godot("get virtual");
     #if #exists(JaiClass__process_ptr_wrapper) {
         if StringName_casecmp_to(p_name, new_string("_process")) == 0 {
-            print_to_godot("process");
             return null;
-            // return JaiClass__process_ptr_wrapper;
         }
     }
     #if #exists(JaiClass__enter_tree_ptr_wrapper) {
         if StringName_casecmp_to(p_name, new_string("_enter_tree")) == 0 {
-            print_to_godot("enter_tree");
             return JaiClass__enter_tree_ptr_wrapper;
         }
     }
@@ -67,18 +63,25 @@ _get_virtual :: (p_class_userdata: *void, p_name: ConstStringNamePtr) -> ClassCa
 };
 __END
 
+insert_method_wrappers :: ($type: Type) -> string {
+    ti := cast(*Type_Info_Struct)type;
+    builder: String_Builder;
+    for ti.members {
+        if it.type.type != .PROCEDURE then continue;
+        proc : *Type_Info_Procedure = xx it.type;
+    
+        generate_ptr_wrapper_code(*builder, proc, it.name, ti.name);
+    }
+    return builder_to_string(*builder);
+}
+
 register_class :: ($type: Type) {
+
+    // Has to be done in this order or boiler plate wont see our wrappers
+    #insert #run insert_method_wrappers(type);
     #insert #run class_boilerplate(type);
 
-
     ti := cast(*Type_Info_Struct)type;
-
-    for ti.members {
-        if it.type != .PROCEDURE then continue;
-        proc : (*Type_Info_Procedure) = xx it;
-        #insert #run generate_ptr_wrapper_code(proc, it.name);
-    }
-
     name := new_string_name(ti.name);
     defer destroy(*name);
     member_name, base_name := #run find_base_name(type);
@@ -137,7 +140,7 @@ generate_wrapper :: (call := #caller_code) -> string #expand {
     return generate_ptr_wrapper_code(xx ti, code_ident.name);
 }
 
-generate_ptr_wrapper_code :: (proc: *Type_Info_Procedure, name: string) -> string #compile_time {
+generate_ptr_wrapper_code :: (builder : *String_Builder, proc: *Type_Info_Procedure, proc_name: string, class_name: string) #compile_time {
     if proc.return_types.count > 1 {
         assert(false, "Multiple return values aren't supported!");
     }
@@ -145,36 +148,34 @@ generate_ptr_wrapper_code :: (proc: *Type_Info_Procedure, name: string) -> strin
     is_const := false; // @TODO
     arg_count := ifx is_const then proc.argument_types.count else proc.argument_types.count - 1;
 
-    builder: String_Builder;
-    print_to_builder(*builder, "%_ptr_wrapper :: (p_instance: ClassInstancePtr, p_args: *ConstTypePtr, r_ret: TypePtr) -> void #c_call {\n", name);
+    print_to_builder(builder, "%_%_ptr_wrapper :: (p_instance: ClassInstancePtr, p_args: *ConstTypePtr, r_ret: TypePtr) -> void #c_call {\n", class_name, proc_name);
     if arg_count > 0 { 
-        print_to_builder(*builder, "\targs : []*void = ---;\n");
-        print_to_builder(*builder, "\targs.count = %;\n", arg_count);
-        print_to_builder(*builder, "\targs.data = p_args;\n");
+        print_to_builder(builder, "\targs : []*void = ---;\n");
+        print_to_builder(builder, "\targs.count = %;\n", arg_count);
+        print_to_builder(builder, "\targs.data = p_args;\n");
     }
-    print_to_builder(*builder, "\tpush_context __context {\n");
-    append(*builder, "\t\t");
+    print_to_builder(builder, "\tpush_context __context {\n");
+    append(builder, "\t\t");
     if proc.return_types.count == 1 {
-        print_to_builder(*builder,"r_ret = ");
+        print_to_builder(builder,"r_ret = ");
     }
-    print_to_builder(*builder, "%(p_instance", name); // (cast(*float)args[0]).*);"
+    print_to_builder(builder, "%.%(p_instance", class_name, proc_name); // (cast(*float)args[0]).*);"
     if arg_count > 0 {
         start := ifx is_const then 0 else 1;
         for start..proc.argument_types.count - 1 {
-            append(*builder, ", (cast(*");
-            print_type_to_builder(*builder, proc.argument_types[it]);
-            append(*builder, ")");
-            print_to_builder(*builder, "args[%]).*", it);
+            append(builder, ", (cast(*");
+            print_type_to_builder(builder, proc.argument_types[it]);
+            append(builder, ")");
+            print_to_builder(builder, "args[%]).*", it);
             // print_type_to_builder(*builder, it);
         }
     }
-    print_to_builder(*builder, ");\n");
-    print_to_builder(*builder, "\t}\n");
+    print_to_builder(builder, ");\n");
+    print_to_builder(builder, "\t}\n");
     
     if proc.return_types.count == 0 {
-        print_to_builder(*builder, "\tr_ret = null;\n");
+        print_to_builder(builder, "\tr_ret = null;\n");
     } 
 
-    print_to_builder(*builder, "}\n");
-    return builder_to_string(*builder);
+    print_to_builder(builder, "}\n");
 }
